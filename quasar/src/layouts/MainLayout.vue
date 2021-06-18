@@ -25,7 +25,7 @@
                   <q-btn @click="search_device_fio(fio)" round dense flat icon="send" />
                 </template>
               </q-input>
-              <q-input bottom-slots v-model="tabnum" label="Поиск по табельному номеру">
+              <q-input bottom-slots type="number" v-model="tabnum" label="Поиск по табельному номеру">
                 <template v-slot:append>
                   <q-icon v-if="tabnum !== ''" name="close" @click="tabnum = ''" class="cursor-pointer" />
                 </template>
@@ -41,9 +41,9 @@
                   <q-btn @click="search_device_id(device_id)" round dense flat icon="send" />
                 </template>
               </q-input>
-              <div>{{result}}</div>
+              
             </form>
-            <form v-if="show" class="q-gutter-md column items-start flex flex-center" style="margin: 1px 0" method="POST">
+            <form v-if="show" enctype="multipart/form-data" id="uploadForm" class="q-gutter-md column items-start flex flex-center" style="margin: 1px 0" method="POST">
               <q-input
                 @input="val => { files = val }"
                 multiple
@@ -70,16 +70,16 @@
                 <q-input v-model="fio" label="ФИО получателя" />
               </div>
               <div class="q-gutter-md">
-                <q-input v-model="tabnum" label="Табельный номер получателя" />
+                <q-input type="number" v-model="tabnum" label="Табельный номер получателя" />
               </div>
               <div class="q-gutter-md">
-                <q-input v-model="departament" label="Депортамет получателя" />
+                <q-input v-model="department" label="Депортамет получателя" />
               </div>
               <div class="flex flex-center" style="margin: 20px">
-                <q-btn align="center" @click="give_flask(device_id, fio, tabnum, departament)" class="btn-fixed-width" color="primary" label="Выдать" />
+                <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department)" class="btn-fixed-width" color="primary" label="Выдать" />
               </div>
             </form>
-            <form v-if="show_get" method="PUT">
+            <form v-if="show_get" method="DELETE">
               <div class="q-gutter-md">
                 <q-input v-model="device_id" label="id флешки" />
               </div>
@@ -88,7 +88,6 @@
               </div>
             </form>
             <form action="" method="GET" v-if="show_search">
-              
               <div class="q-gutter-md">
                 <q-input v-model="device_id" label="id флешки" />  
               </div>
@@ -97,6 +96,7 @@
                 <q-btn @click="search_off()" align="center" class="btn-fixed-width" color="primary" label="Списанные флешки" />
               </div>
             </form>
+            <div style="width: 678px">{{result}}</div>
         </section>
     </q-page-container>
   </q-layout>
@@ -112,12 +112,9 @@ export default {
       file_reg: '',
       fio: '',
       tabnum: '',
-      departament: '',
-      result: axios.get("http://localhost:800/all_flask",{ headers:{    
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*' 
-                        }}),
+      department: '',
+      result: axios.get("http://localhost:800/all_flask").then(response => (this.result = response)),
+      result_work: '',
       show_all: true,
       show_search: false,
       show: false,
@@ -127,80 +124,40 @@ export default {
   },
   methods: {
     add_flask(file_txt, file_reg){
-      return axios.post("http://localhost:800/add_flask",{
-        content: file_txt, file_reg
-      })
+      data = new FormData(document.getElementById('uploadForm'))
+      data.append('file_txt', file_txt.files[0])
+      data.append('file_txt', file_reg.files[0])
+      axios.post("http://localhost:800/upload_file",date, {headers: {
+        'Content-Type': 'multipart/form-data'
+      }}).then(response => (this.result_work = response))
     },
     get_flask(device_id){
-      return axios.put("http://localhost:800/get_flask", {
-        content: device_id
-      },{
-      headers: {
-        'Content-type': 'application/json',
-      }
-      })
+      axios.delete("http://localhost:800/get_flask?device_id="+device_id, {
+      }).then(response => (this.result_work = response))
     },
-    give_flask(device_id, fio, tabnum, departament){
-      return axios.put("http://localhost:800/give_flask",{
-        content: device_id, fio, tabnum, departament
-      },
-      {
-      headers: {
-        'Content-type': 'application/json',
-      }
-      })
+    give_flask(device_id, fio, tabnum, department){
+      axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio="+fio+"&tabnum="+tabnum+"&department="+department,{
+      }).then(response => (this.result_work = response))
     },
     search_device_fio(fio){
-      return axios.get("http://localhost:800/name_flask",{
-        content: fio
-      },
-      {
-      headers: {
-        'Content-type': 'application/json',
-      }
-      })
+      axios.get("http://localhost:800/name_flask?fio="+fio,{
+      }).then(response => (this.result = response))
     },
     search_device_tabnum(tabnum){
-      return axios.get("http://localhost:800/tabnum_flask",{
-        content: tabnum
-      },
-      {
-      headers: {
-        'Content-type': 'application/json',
-      }
-      })
+      axios.get('http://localhost:800/tabnum_flask?tabnum='+tabnum,{
+      }).then(response => (this.result = response))
     },
     search_device_id(device_id){
-      return axios.get("http://localhost:800/id_flask",{
-        content: device_id
-      },
-      {
-       headers:{    
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'                 
-      }
-      })
+      axios.get("http://localhost:800/id_flask?device_id="+device_id,{
+      }).then(response => (this.result = response))
     },
     search_date(device_id){
-      return axios.get('http://localhost:800/date_flask',{
-        content: device_id
-      },
-      {
-      headers: {
-        'Content-type': 'application/json',
-      }
-      })
+      axios.get('http://localhost:800/date_flask?device_id='+device_id,{
+      }).then(response => (this.result = response))
     },
     search_off(){
-      return axios.get('http://localhost:800/date_flask',{
-        content: device_id
-      },
-      {
-      headers: {
-        'Content-type': 'application/json',
-      }
-      })
+      axios.get('http://localhost:800/off_flask',{
+      }).then(response => (this.result = response))
     }
   }
 } 
