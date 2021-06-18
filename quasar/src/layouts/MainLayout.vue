@@ -124,9 +124,9 @@ export default {
   },
   methods: {
     add_flask(file_txt, file_reg){
-      data = new FormData(document.getElementById('uploadForm'))
-      data.append('file_txt', file_txt.files[0])
-      data.append('file_txt', file_reg.files[0])
+      let data = new FormData()
+      data.append('file', file_txt)
+      data.append('file', file_reg)
       axios.post("http://localhost:800/upload_file",date, {headers: {
         'Content-Type': 'multipart/form-data'
       }}).then(response => (this.result_work = response))
