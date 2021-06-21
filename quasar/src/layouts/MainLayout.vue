@@ -97,11 +97,12 @@
               </div>
             </form>
             <template>
-              <div class="q-pa-md">
+              <div style="padding: 16px 0" class="q-pa-md">
                 <q-table
                   :data="data"
                   :columns="columns"
                   row-key="name"
+                  @request="request"
                 />
               </div>
             </template>
@@ -130,10 +131,10 @@ export default {
       show_get: false,
       columns: [
         {
-          name: 'device_id_base',
+          name: 'name',
           required: true,
           label: 'Флешка',
-          align: 'left',
+          align: 'center',
           field: row => row.name,
           format: val => `${val}`,
           sortable: true,
@@ -148,15 +149,15 @@ export default {
         { name: 'fio_base', align: 'center', label: 'Сотрудник', field: 'fio_base', sortable: true },
         { name: 'tabnum_base', align: 'center', label: 'Табельный номер', field: 'tabnum_base', sortable: true},
         { name: 'department_base', align: 'center', label: 'Департамент', field: 'department_base', sortable: true}],
-        // data: 
     }
   },
   methods: {
     add_flask(file_txt, file_reg){
-      let data = new FormData()
-      data.append('file', file_txt)
-      data.append('file', file_reg)
-      axios.post("http://localhost:800/upload_file",date, {headers: {
+      const date_file_txt = new FormData()
+      const date_file_reg = new FormData()
+      date_file_txt.append('file', file_txt)
+      date_file_reg.append('file', file_reg)
+      axios.post("http://localhost:800/upload_file",(date_file_txt, date_file_reg), {headers: {
         'Content-Type': 'multipart/form-data'
       }}).then(response => (this.result_work = response))
     },
