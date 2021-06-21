@@ -10,7 +10,7 @@
     <q-page-container class="flex flex-center" style="margin: 50px 0">
       <section class="section-add_flask -section" id='all'>
             <nav class="flex flex-center">
-                <q-btn v-on:click="show = false, show_all = true, show_get = false, show_give = false, show_search=false" align="center" class="btn-fixed-width" color="primary" icon="home" />
+                <q-btn v-on:click="show = false, show_all = true, show_get = false, show_give = false, show_search=false, data_start()" align="center" class="btn-fixed-width" color="primary" icon="home" />
                 <q-btn v-on:click="show = true, show_all = false, show_get = false, show_give = false, show_search=false" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
                 <q-btn v-on:click="show_give = true, show_all = false, show = false, show_get = false, show_search=false" align="center" class="btn-fixed-width" color="primary" label="Выдать флешку" />
                 <q-btn v-on:click="show_get = true, show_all = false, show = false, show_give = false, show_search=false" align="center" class="btn-fixed-width" color="primary" label="Вернуть флешку" />
@@ -63,11 +63,6 @@
                       style="max-width: 300px"
                       name='file_reg'
                     />
-                    <div>
-                      <q-btn round size="sm" color="accent" @click="showNotif('center')">
-                        <q-icon name="fullscreen_exit" />
-                      </q-btn>
-                  </div>
                   </div>
                 </div>
               </template>
@@ -110,10 +105,10 @@
             <template>
               <div style="padding: 16px 0" class="q-pa-md">
                 <q-table
-                  :data="data"
                   :columns="columns"
-                  row-key="name"
-                  @request="request"
+                  row-key="0"
+                  :data="result"
+                  :rows-per-page-options="[0]"
                 />
               </div>
             </template>
@@ -133,7 +128,7 @@ export default {
       fio: '',
       tabnum: '',
       department: '',
-      result: axios.get("http://localhost:800/all_flask").then(response => (this.result = response)),
+      result: axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base)),
       result_work: '',
       show_all: true,
       show_search: false,
@@ -142,24 +137,22 @@ export default {
       show_get: false,
       columns: [
         {
-          name: 'name',
-          required: true,
+          name: 'device_id',
           label: 'Флешка',
           align: 'center',
-          field: row => row.name,
-          format: val => `${val}`,
+          field: '0',
           sortable: true,
           classes: 'bg-grey-2 ellipsis',
           style: 'max-width: 100px',
           headerClasses: 'bg-primary text-white'
         },
-        { name: 'device_path_base', align: 'center', label: 'Файлы txt', field: 'device_path_base', sortable: true },
-        { name: 'device_reg_base', align: 'center', label: 'Файлы reg', field: 'device_reg_base', sortable: true },
-        { name: 'date_in_base', align: 'center', label: 'Дата введения', field: 'date_in_base', sortable: true },
-        { name: 'date_out_base', align: 'center', label: 'Дата выдачи', field: 'date_out_base', sortable: true },
-        { name: 'fio_base', align: 'center', label: 'Сотрудник', field: 'fio_base', sortable: true },
-        { name: 'tabnum_base', align: 'center', label: 'Табельный номер', field: 'tabnum_base', sortable: true},
-        { name: 'department_base', align: 'center', label: 'Департамент', field: 'department_base', sortable: true}],
+        { name: 'device_path', align: 'center', label: 'Файлы txt', field: '1', sortable: true },
+        { name: 'device_reg', align: 'center', label: 'Файлы reg', field: '2', sortable: true },
+        { name: 'date_in_base', align: 'center', label: 'Дата введения', field: '3', sortable: true },
+        { name: 'date_out_base', align: 'center', label: 'Дата выдачи', field: '4', sortable: true },
+        { name: 'fio_base', align: 'center', label: 'Сотрудник', field: '5', sortable: true },
+        { name: 'tabnum_base', align: 'center', label: 'Табельный номер', field: '6', sortable: true},
+        { name: 'department_base', align: 'center', label: 'Департамент', field: '7', sortable: true}],
     }
   },
   methods: {
@@ -170,44 +163,47 @@ export default {
       date_file_reg.append('file', file_reg)
       axios.post("http://localhost:800/upload_file",(date_file_txt, date_file_reg), {headers: {
         'Content-Type': 'multipart/form-data'
-      }}).then(this.$q.notify({
+      }}).then(response =>(this.$q.notify({
         message: response,
         color: 'primal'
-      }))
+      })))
+    },
+    data_start(){
+      axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base))
     },
     get_flask(device_id){
       axios.delete("http://localhost:800/get_flask?device_id="+device_id,
-      ).then(this.$q.notify({
+      ).then(response =>(this.$q.notify({
         message: response,
         color: 'primal'
-      }))
+      })))
     },
     give_flask(device_id, fio, tabnum, department){
       axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio="+fio+"&tabnum="+tabnum+"&department="+department,{
-      }).then(this.$q.notify({
+      }).then(response =>(this.$q.notify({
         message: response,
         color: 'primal'
-      }))
+      })))
     },
     search_device_fio(fio){
       axios.get("http://localhost:800/name_flask?fio="+fio,{
-      }).then(response => (this.result = response))
+      }).then(response => (this.result = response.data.Flask))
     },
     search_device_tabnum(tabnum){
       axios.get('http://localhost:800/tabnum_flask?tabnum='+tabnum,{
-      }).then(response => (this.result = response))
+      }).then(response => (this.result = response.data.Flask))
     },
     search_device_id(device_id){
       axios.get("http://localhost:800/id_flask?device_id="+device_id,{
-      }).then(response => (this.result = response))
+      }).then(response => (this.result = response.data.Flask))
     },
     search_date(device_id){
       axios.get('http://localhost:800/date_flask?device_id='+device_id,{
-      }).then(response => (this.result = response))
+      }).then(response => (this.result = response.data.Flask))
     },
     search_off(){
       axios.get('http://localhost:800/off_flask',{
-      }).then(response => (this.result = response))
+      }).then(response => (this.result = response.data.Flask))
     }
   }
 } 
