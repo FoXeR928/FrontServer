@@ -9,7 +9,7 @@
     </q-header>
     <q-page-container class="flex flex-center" style="margin: 50px 0">
       <section class="section-add_flask -section" id='all'>
-            <nav>
+            <nav class="flex flex-center">
                 <q-btn v-on:click="show = false, show_all = true, show_get = false, show_give = false, show_search=false" align="center" class="btn-fixed-width" color="primary" icon="home" />
                 <q-btn v-on:click="show = true, show_all = false, show_get = false, show_give = false, show_search=false" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
                 <q-btn v-on:click="show_give = true, show_all = false, show = false, show_get = false, show_search=false" align="center" class="btn-fixed-width" color="primary" label="Выдать флешку" />
@@ -96,7 +96,15 @@
                 <q-btn @click="search_off()" align="center" class="btn-fixed-width" color="primary" label="Списанные флешки" />
               </div>
             </form>
-            <div style="width: 678px">{{result}}</div>
+            <template>
+              <div class="q-pa-md">
+                <q-table
+                  :data="data"
+                  :columns="columns"
+                  row-key="name"
+                />
+              </div>
+            </template>
         </section>
     </q-page-container>
   </q-layout>
@@ -120,6 +128,27 @@ export default {
       show: false,
       show_give: false,
       show_get: false,
+      columns: [
+        {
+          name: 'device_id_base',
+          required: true,
+          label: 'Флешка',
+          align: 'left',
+          field: row => row.name,
+          format: val => `${val}`,
+          sortable: true,
+          classes: 'bg-grey-2 ellipsis',
+          style: 'max-width: 100px',
+          headerClasses: 'bg-primary text-white'
+        },
+        { name: 'device_path_base', align: 'center', label: 'Файлы txt', field: 'device_path_base', sortable: true },
+        { name: 'device_reg_base', align: 'center', label: 'Файлы reg', field: 'device_reg_base', sortable: true },
+        { name: 'date_in_base', align: 'center', label: 'Дата введения', field: 'date_in_base', sortable: true },
+        { name: 'date_out_base', align: 'center', label: 'Дата выдачи', field: 'date_out_base', sortable: true },
+        { name: 'fio_base', align: 'center', label: 'Сотрудник', field: 'fio_base', sortable: true },
+        { name: 'tabnum_base', align: 'center', label: 'Табельный номер', field: 'tabnum_base', sortable: true},
+        { name: 'department_base', align: 'center', label: 'Департамент', field: 'department_base', sortable: true}],
+        // data: 
     }
   },
   methods: {
