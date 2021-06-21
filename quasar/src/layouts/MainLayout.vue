@@ -44,22 +44,33 @@
               
             </form>
             <form v-if="show" enctype="multipart/form-data" id="uploadForm" class="q-gutter-md column items-start flex flex-center" style="margin: 1px 0" method="POST">
-              <q-input
-                @input="val => { files = val }"
-                multiple
-                filled
-                v-model="file_txt"
-                type="file"
-                hint="Файл txt"
-               />
-              <q-input
-                @input="val => { files = val }"
-                multiple
-                filled
-                v-model="file_reg"
-                type="file"
-                hint="Файл reg"
-              />
+              <template>
+                <div class="q-pa-md">
+                  <div class="q-gutter-sm row items-start">
+                    <q-uploader
+                      url="http://localhost:800/upload_file"
+                      style="max-width: 300px"
+                      name='file_txt'
+                    />
+                  </div>
+                </div>
+              </template>
+              <template>
+                <div class="q-pa-md">
+                  <div class="q-gutter-sm row items-start">
+                    <q-uploader
+                      url="http://localhost:800/upload_file"
+                      style="max-width: 300px"
+                      name='file_reg'
+                    />
+                    <div>
+                      <q-btn round size="sm" color="accent" @click="showNotif('center')">
+                        <q-icon name="fullscreen_exit" />
+                      </q-btn>
+                  </div>
+                  </div>
+                </div>
+              </template>
               <q-btn align="center" @click="add_flask(file_txt, file_reg)" class="btn-fixed-width" color="primary" label="Добавить" />
             </form>
             <form v-if="show_give" method="PUT">
@@ -159,15 +170,24 @@ export default {
       date_file_reg.append('file', file_reg)
       axios.post("http://localhost:800/upload_file",(date_file_txt, date_file_reg), {headers: {
         'Content-Type': 'multipart/form-data'
-      }}).then(response => (this.result_work = response))
+      }}).then(this.$q.notify({
+        message: response,
+        color: 'primal'
+      }))
     },
     get_flask(device_id){
-      axios.delete("http://localhost:800/get_flask?device_id="+device_id, {
-      }).then(response => (this.result_work = response))
+      axios.delete("http://localhost:800/get_flask?device_id="+device_id,
+      ).then(this.$q.notify({
+        message: response,
+        color: 'primal'
+      }))
     },
     give_flask(device_id, fio, tabnum, department){
       axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio="+fio+"&tabnum="+tabnum+"&department="+department,{
-      }).then(response => (this.result_work = response))
+      }).then(this.$q.notify({
+        message: response,
+        color: 'primal'
+      }))
     },
     search_device_fio(fio){
       axios.get("http://localhost:800/name_flask?fio="+fio,{
