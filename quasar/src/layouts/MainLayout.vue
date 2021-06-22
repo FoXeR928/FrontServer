@@ -90,7 +90,6 @@
                 <q-btn @click="search_off()" align="center" class="btn-fixed-width" color="primary" label="Списанные флешки" />
               </div>
             </form>
-            <template>
               <div style="padding: 16px 0" class="q-pa-md">
                 <q-table
                   :columns="columns"
@@ -102,7 +101,6 @@
                   class="my-sticky-virtscroll-table"
                 />
               </div>
-            </template>
         </section>
     </q-page-container>
   </q-layout>
@@ -127,7 +125,7 @@
 </style>
 <script> 
 import axios from 'axios'
-import { Notify } from 'quasar'
+import {Notify} from 'quasar'
 export default { 
   data(){
     return{
@@ -168,8 +166,8 @@ export default {
   methods: {
     add_flask(file_txt, file_reg){
       let formData = new FormData();
-      formData.append('file', this.file_txt);
-      formData.append('file', this.file_reg);
+      formData.append('file_txt', this.file_txt);
+      formData.append('file_reg', this.file_reg);
       axios.post('http://localhost:800/upload_file', formData, {headers: {
         'Content-Type': 'multipart/form-data'
     }})
