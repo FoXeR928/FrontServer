@@ -41,20 +41,19 @@
                   <q-btn @click="search_device_id(device_id)" round dense flat icon="send" />
                 </template>
               </q-input>
-              
             </form>
             <form v-if="show" enctype="multipart/form-data" id="uploadForm" class="q-gutter-md column items-start flex flex-center" style="margin: 1px 0" method="POST">
-              <div class="q-pa-md">
-                <div class="q-gutter-md row items-start">
-                  <q-input type="file" id="file_txt" ref="file_txt" multiple hint="Файл txt" filled v-on:change="handleFileUpload()"/>
-                </div>
-              </div>
-              <div class="q-pa-md">
-                <div class="q-gutter-md row items-start">
-                  <q-input type="file" id="file_reg" ref="file_reg" multiple hint="Файл reg" filled v-on:change="handleFileUpload()"/>
-                </div>
-              </div>
-              <q-btn align="center" @click="add_flask(file_txt, file_reg)" class="btn-fixed-width" color="primary" label="Добавить" />
+              <q-file filled v-model="file_txt" label="Файл txt" style="width:300px" counter>
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
+              <q-file filled v-model="file_reg" label="Файл txt" style="width:300px" counter>
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
+              <q-btn align="center" @click="add_flask(file_txt, file_reg), alert=true" class="btn-fixed-width" color="primary" label="Добавить" />
             </form>
             <form v-if="show_give" method="PUT">
               <div class="q-gutter-md">
@@ -70,7 +69,7 @@
                 <q-input v-model="department" label="Депортамет получателя" />
               </div>
               <div class="flex flex-center" style="margin: 20px">
-                <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department)" class="btn-fixed-width" color="primary" label="Выдать" />
+                <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true" class="btn-fixed-width" color="primary" label="Выдать" />
               </div>
             </form>
             <form v-if="show_get" method="DELETE">
@@ -78,7 +77,7 @@
                 <q-input v-model="device_id" label="id флешки" />
               </div>
               <div class="flex flex-center" style="margin: 20px">
-                <q-btn align="center" @click="get_flask(device_id)" class="btn-fixed-width" color="primary" label="Вернуть" />
+                <q-btn align="center" @click="get_flask(device_id), alert=true" class="btn-fixed-width" color="primary" label="Вернуть" />
               </div>
             </form>
             <form action="" method="GET" v-if="show_search">
@@ -90,7 +89,7 @@
                 <q-btn @click="search_off()" align="center" class="btn-fixed-width" color="primary" label="Списанные флешки" />
               </div>
             </form>
-              <div style="padding: 16px 0" class="q-pa-md">
+              <div style="padding: 16px 0; max-width: 1133px" class="q-pa-md">
                 <q-table
                   :columns="columns"
                   row-key="0"
@@ -102,6 +101,21 @@
                 />
               </div>
         </section>
+        <q-dialog v-model="alert">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Сообщение</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+         {{result_work}}
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     </q-page-container>
   </q-layout>
 </template>
@@ -125,18 +139,18 @@
 </style>
 <script> 
 import axios from 'axios'
-import {Notify} from 'quasar'
 export default { 
   data(){
     return{
-      device_id: '',
+      alert: false,
       file_txt: '',
       file_reg: '',
+      device_id: '',
       fio: '',
       tabnum: '',
       department: '',
       result: axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base)),
-      result_work: '',
+      result_work: 'Проверьте корректность введенных данных',
       show_all: true,
       show_search: false,
       show: false,
@@ -170,26 +184,18 @@ export default {
       formData.append('file_reg', this.file_reg);
       axios.post('http://localhost:800/upload_file', formData, {headers: {
         'Content-Type': 'multipart/form-data'
-    }})
-    },
-    handleFileUpload(){
-      this.file_txt = this.$refs.file_txt.files;
-      this.file_reg =this.$refs.file_reg.files;
+    }}).then(response => (this.result_work = response))
     },
     data_start(){
       axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base))
     },
     get_flask(device_id){
       axios.delete("http://localhost:800/get_flask?device_id="+device_id,
-      ).then(response => (Notify.create({
-          message: response,
-          color: 'primary',
-          position: 'center'
-        })))
+      ).then(response => (this.result_work = response.data))
     },
     give_flask(device_id, fio, tabnum, department){
       axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio="+fio+"&tabnum="+tabnum+"&department="+department,{
-      }).then(response => (this.result_work = response)).then(showNotif())
+      }).then(response => (this.result_work = response.data))
     },
     search_device_fio(fio){
       axios.get("http://localhost:800/name_flask?fio="+fio,{
@@ -211,12 +217,6 @@ export default {
       axios.get('http://localhost:800/off_flask',{
       }).then(response => (this.result = response.data.Flask))
     },
-    showNotif () {
-        Notify.create({
-          message: result_work,
-          color: 'primary'
-        })
-      }
   }
 } 
 </script>
