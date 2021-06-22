@@ -44,28 +44,16 @@
               
             </form>
             <form v-if="show" enctype="multipart/form-data" id="uploadForm" class="q-gutter-md column items-start flex flex-center" style="margin: 1px 0" method="POST">
-              <template>
-                <div class="q-pa-md">
-                  <div class="q-gutter-sm row items-start">
-                    <q-uploader
-                      url="http://localhost:800/upload_file"
-                      style="max-width: 300px"
-                      name='file_txt'
-                    />
-                  </div>
+              <div class="q-pa-md">
+                <div class="q-gutter-md row items-start">
+                  <q-input type="file" id="file_txt" ref="file_txt" multiple hint="Файл txt" filled v-on:change="handleFileUpload()"/>
                 </div>
-              </template>
-              <template>
-                <div class="q-pa-md">
-                  <div class="q-gutter-sm row items-start">
-                    <q-uploader
-                      url="http://localhost:800/upload_file"
-                      style="max-width: 300px"
-                      name='file_reg'
-                    />
-                  </div>
+              </div>
+              <div class="q-pa-md">
+                <div class="q-gutter-md row items-start">
+                  <q-input type="file" id="file_reg" ref="file_reg" multiple hint="Файл reg" filled v-on:change="handleFileUpload()"/>
                 </div>
-              </template>
+              </div>
               <q-btn align="center" @click="add_flask(file_txt, file_reg)" class="btn-fixed-width" color="primary" label="Добавить" />
             </form>
             <form v-if="show_give" method="PUT">
@@ -109,6 +97,9 @@
                   row-key="0"
                   :data="result"
                   :rows-per-page-options="[0]"
+                  style="height: 400px"
+                  virtual-scroll
+                  class="my-sticky-virtscroll-table"
                 />
               </div>
             </template>
@@ -117,8 +108,26 @@
   </q-layout>
 </template>
 
+
+<style lang="sass">
+.my-sticky-virtscroll-table
+
+  .q-table__top,
+  .q-table__bottom,
+  thead tr:first-child th
+    background-color: #fff
+
+  thead tr th
+    position: sticky
+    z-index: 1
+  thead tr:last-child th
+    top: 48px
+  thead tr:first-child th
+    top: 0
+</style>
 <script> 
 import axios from 'axios'
+import { Notify } from 'quasar'
 export default { 
   data(){
     return{
@@ -153,37 +162,36 @@ export default {
         { name: 'fio_base', align: 'center', label: 'Сотрудник', field: '5', sortable: true },
         { name: 'tabnum_base', align: 'center', label: 'Табельный номер', field: '6', sortable: true},
         { name: 'department_base', align: 'center', label: 'Департамент', field: '7', sortable: true}],
+    
     }
   },
   methods: {
     add_flask(file_txt, file_reg){
-      const date_file_txt = new FormData()
-      const date_file_reg = new FormData()
-      date_file_txt.append('file', file_txt)
-      date_file_reg.append('file', file_reg)
-      axios.post("http://localhost:800/upload_file",(date_file_txt, date_file_reg), {headers: {
+      let formData = new FormData();
+      formData.append('file', this.file_txt);
+      formData.append('file', this.file_reg);
+      axios.post('http://localhost:800/upload_file', formData, {headers: {
         'Content-Type': 'multipart/form-data'
-      }}).then(response =>(this.$q.notify({
-        message: response,
-        color: 'primal'
-      })))
+    }})
+    },
+    handleFileUpload(){
+      this.file_txt = this.$refs.file_txt.files;
+      this.file_reg =this.$refs.file_reg.files;
     },
     data_start(){
       axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base))
     },
     get_flask(device_id){
       axios.delete("http://localhost:800/get_flask?device_id="+device_id,
-      ).then(response =>(this.$q.notify({
-        message: response,
-        color: 'primal'
-      })))
+      ).then(response => (Notify.create({
+          message: response,
+          color: 'primary',
+          position: 'center'
+        })))
     },
     give_flask(device_id, fio, tabnum, department){
       axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio="+fio+"&tabnum="+tabnum+"&department="+department,{
-      }).then(response =>(this.$q.notify({
-        message: response,
-        color: 'primal'
-      })))
+      }).then(response => (this.result_work = response)).then(showNotif())
     },
     search_device_fio(fio){
       axios.get("http://localhost:800/name_flask?fio="+fio,{
@@ -204,7 +212,13 @@ export default {
     search_off(){
       axios.get('http://localhost:800/off_flask',{
       }).then(response => (this.result = response.data.Flask))
-    }
+    },
+    showNotif () {
+        Notify.create({
+          message: result_work,
+          color: 'primary'
+        })
+      }
   }
 } 
 </script>
