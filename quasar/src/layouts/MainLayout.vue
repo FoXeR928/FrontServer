@@ -100,7 +100,7 @@
                               icon-right="archive"
                               label="Скачать файлы"
                               no-caps
-                              @click="exportTable"
+                              @click="exportTable(props.row[0],props.row[1],props.row[2])"
                             />
                           </div>
                         </div>
@@ -250,14 +250,9 @@ export default {
       axios.get('http://localhost:800/off_flask',{
       }).then(response => (this.result = response.data.Flask))
     },
-    exportTable () {
-        
-
-      exportFile(
-          'table-export.csv',
-          result,
-          'text/csv'
-        )
+    exportTable (device_id, device_path, device_reg) {
+      exportFile(device_id+'.txt', device_path)
+      exportFile(device_id+'.reg', device_reg)
     }
   }
 } 
