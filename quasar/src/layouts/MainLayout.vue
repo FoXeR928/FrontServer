@@ -10,8 +10,8 @@
     <q-page-container class="flex flex-center" style="margin: 50px 0">
       <section class="section-add_flask -section" id='all'>
             <nav class="flex flex-center">
-                <q-btn v-on:click="show = false, show_all = true" align="center" class="btn-fixed-width" color="primary" label="Найти флешку" />
-                <q-btn v-on:click="show = true, show_all = false" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
+                <q-btn v-on:click="show = false, show_all = true, data_start()" align="center" class="btn-fixed-width" color="primary" label="Найти флешку" />
+                <q-btn v-on:click="show = true, show_all = false, data_start()" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
             </nav>
             <form v-if="show_all" action="" method="GET">
               <q-input bottom-slots v-model="fio" label="Поиск по имени">
@@ -51,7 +51,7 @@
                   <q-icon name="attach_file" />
                 </template>
               </q-file>
-              <q-btn align="center" @click="add_flask(file_txt, file_reg), alert=true" class="btn-fixed-width" color="primary" label="Добавить" />
+              <q-btn align="center" @click="add_flask(file_txt, file_reg), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Добавить" />
             </form>
               <div style="padding: 16px 0; max-width: 1133px" class="q-pa-md">
                 <q-table
@@ -93,9 +93,15 @@
                       <q-td colspan="100%">
                         <div class="text-left">
                           <div>
-                            <div>{{props.row.name}}</div>
-                            <q-btn align="center" style="margin-right: 10px;" @click="get_flask(props.row.device_id), alert=true" class="btn-fixed-width" color="primary" label="Вернуть" />
-                            <q-btn v-on:click="show_give = true" align="center" class="btn-fixed-width" color="primary" label="Выдать флешку" />
+                            <q-btn align="center"  @click="get_flask(props.row[0]), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
+                            <q-btn v-on:click="show_give = true, device_id=props.row[0]" align="center" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
+                            <q-btn
+                              color="primary"
+                              icon-right="archive"
+                              label="Скачать файлы"
+                              no-caps
+                              @click="exportTable"
+                            />
                           </div>
                         </div>
                       </q-td>
@@ -140,7 +146,7 @@
             </q-card-section>
 
             <q-card-actions align="center" style="width: 500px">
-              <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true" class="btn-fixed-width" color="primary" label="Выдать" />
+              <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Выдать" />
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -167,6 +173,7 @@
 </style>
 <script> 
 import axios from 'axios'
+import { exportFile} from 'quasar'
 export default { 
   data(){
     return{
@@ -190,14 +197,11 @@ export default {
           label: 'Флешка',
           align: 'center',
           field: '0',
-          row: 'name',
           sortable: true,
           classes: 'bg-grey-2 ellipsis',
           style: 'max-width: 100px',
           headerClasses: 'bg-primary text-white'
         },
-        { name: 'device_path', align: 'center', label: 'Файлы txt', field: '1', sortable: true },
-        { name: 'device_reg', align: 'center', label: 'Файлы reg', field: '2', sortable: true },
         { name: 'date_in_base', align: 'center', label: 'Дата введения', field: '3', sortable: true },
         { name: 'date_out_base', align: 'center', label: 'Дата выдачи', field: '4', sortable: true },
         { name: 'fio_base', align: 'center', label: 'Сотрудник', field: '5', sortable: true },
@@ -213,7 +217,7 @@ export default {
       formData.append('file_reg', this.file_reg);
       axios.post('http://localhost:800/upload_file', formData, {headers: {
         'Content-Type': 'multipart/form-data'
-    }}).then(response => (this.result_work = response))
+    }}).then(response => (this.result_work = response[0]))
     },
     data_start(){
       axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base))
@@ -246,6 +250,15 @@ export default {
       axios.get('http://localhost:800/off_flask',{
       }).then(response => (this.result = response.data.Flask))
     },
+    exportTable () {
+        
+
+      exportFile(
+          'table-export.csv',
+          result,
+          'text/csv'
+        )
+    }
   }
 } 
 </script>
