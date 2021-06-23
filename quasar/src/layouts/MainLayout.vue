@@ -13,7 +13,7 @@
                 <q-btn v-on:click="show = false, show_all = true, data_start()" align="center" class="btn-fixed-width" color="primary" label="Найти флешку" />
                 <q-btn v-on:click="show = true, show_all = false, data_start()" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
             </nav>
-            <form v-if="show_all" action="" method="GET">
+            <form v-if="show_all" action="" method="GET" class="flex flex-center">
               <q-input bottom-slots v-model="fio" label="Поиск по имени">
                 <template v-slot:append>
                   <q-icon v-if="fio !== ''" name="close" @click="fio = ''" class="cursor-pointer" />
@@ -41,16 +41,18 @@
               <q-btn @click="search_off()" align="center" class="btn-fixed-width" color="primary" label="Списанные флешки" />
             </form>
             <form v-if="show" enctype="multipart/form-data" id="uploadForm" class="q-gutter-md column items-start flex flex-center" style="margin: 1px 0" method="POST">
-              <q-file filled v-model="file_txt" label="Файл txt" style="width:300px" counter>
-                <template v-slot:prepend>
-                  <q-icon name="attach_file" />
-                </template>
-              </q-file>
-              <q-file filled v-model="file_reg" label="Файл txt" style="width:300px" counter>
-                <template v-slot:prepend>
-                  <q-icon name="attach_file" />
-                </template>
-              </q-file>
+              <div class="flex flex-center">
+                <q-file filled v-model="file_txt" label="Файл txt" style="width:300px; margin-right: 20px" counter>
+                  <template v-slot:prepend>
+                    <q-icon name="attach_file" />
+                  </template>
+                </q-file>
+                <q-file filled v-model="file_reg" label="Файл txt" style="width:300px" counter>
+                  <template v-slot:prepend>
+                    <q-icon name="attach_file" />
+                  </template>
+                </q-file>
+              </div>
               <q-btn align="center" @click="add_flask(file_txt, file_reg), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Добавить" />
             </form>
               <div style="padding: 16px 0; max-width: 1133px" class="q-pa-md">
@@ -95,9 +97,11 @@
                           <div>
                             <q-btn align="center"  @click="get_flask(props.row[0]), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
                             <q-btn v-on:click="show_give = true, device_id=props.row[0]" align="center" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
+                            <q-btn v-on:click="show_off = true, off_flask(props.row[0]),alert=true, data_start()" align="center"  class="btn-fixed-width" color="primary" label="Списать флешку" />
                             <q-btn
                               color="primary"
                               icon-right="archive"
+                              style="margin: 0 10px;"
                               label="Скачать файлы"
                               no-caps
                               @click="exportTable(props.row[0],props.row[1],props.row[2])"
@@ -215,20 +219,36 @@ export default {
       let formData = new FormData();
       formData.append('file_txt', this.file_txt);
       formData.append('file_reg', this.file_reg);
-      axios.post('http://localhost:800/upload_file', formData, {headers: {
-        'Content-Type': 'multipart/form-data'
-    }}).then(response => (this.result_work = response[0]))
+      try{
+        axios.post('http://localhost:800/upload_file', formData, {headers: {
+          'Content-Type': 'multipart/form-data'
+        }}).then(this.result_work = 'Флешка добавлена')
+      }catch(err){
+        this.result_work=err
+      }
     },
     data_start(){
       axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base))
     },
     get_flask(device_id){
-      axios.delete("http://localhost:800/get_flask?device_id="+device_id,
-      ).then(response => (this.result_work = response.data))
+      try{
+        axios.delete("http://localhost:800/get_flask?device_id="+device_id,
+        ).then(this.result_work = 'Флешка возвращена')
+      }catch(err){
+        this.result_work=err
+      }
     },
     give_flask(device_id, fio, tabnum, department){
-      axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio="+fio+"&tabnum="+tabnum+"&department="+department,{
-      }).then(response => (this.result_work = response.data))
+      try{
+        axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio="+fio+"&tabnum="+tabnum+"&department="+department,{
+        }).then(this.result_work = 'Флешка выдана')
+      }catch(err){
+        this.result_work=err
+      }
+    },
+    off_flask(device_id){
+      axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio=&tabnum="+null+"&department=",{
+      }).then(this.result_work = 'Флешка списана')
     },
     search_device_fio(fio){
       axios.get("http://localhost:800/name_flask?fio="+fio,{
