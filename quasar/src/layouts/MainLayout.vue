@@ -10,11 +10,8 @@
     <q-page-container class="flex flex-center" style="margin: 50px 0">
       <section class="section-add_flask -section" id='all'>
             <nav class="flex flex-center">
-                <q-btn v-on:click="show = false, show_all = true, show_get = false, show_give = false, show_search=false, data_start()" align="center" class="btn-fixed-width" color="primary" icon="home" />
-                <q-btn v-on:click="show = true, show_all = false, show_get = false, show_give = false, show_search=false" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
-                <q-btn v-on:click="show_give = true, show_all = false, show = false, show_get = false, show_search=false" align="center" class="btn-fixed-width" color="primary" label="Выдать флешку" />
-                <q-btn v-on:click="show_get = true, show_all = false, show = false, show_give = false, show_search=false" align="center" class="btn-fixed-width" color="primary" label="Вернуть флешку" />
-                <q-btn v-on:click="show = false, show_all = false, show_get = false, show_give = false, show_search=true" align="center" class="btn-fixed-width" color="primary" label="Найти флешку" />
+                <q-btn v-on:click="show = false, show_all = true" align="center" class="btn-fixed-width" color="primary" label="Найти флешку" />
+                <q-btn v-on:click="show = true, show_all = false" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
             </nav>
             <form v-if="show_all" action="" method="GET">
               <q-input bottom-slots v-model="fio" label="Поиск по имени">
@@ -41,6 +38,7 @@
                   <q-btn @click="search_device_id(device_id)" round dense flat icon="send" />
                 </template>
               </q-input>
+              <q-btn @click="search_off()" align="center" class="btn-fixed-width" color="primary" label="Списанные флешки" />
             </form>
             <form v-if="show" enctype="multipart/form-data" id="uploadForm" class="q-gutter-md column items-start flex flex-center" style="margin: 1px 0" method="POST">
               <q-file filled v-model="file_txt" label="Файл txt" style="width:300px" counter>
@@ -55,40 +53,6 @@
               </q-file>
               <q-btn align="center" @click="add_flask(file_txt, file_reg), alert=true" class="btn-fixed-width" color="primary" label="Добавить" />
             </form>
-            <form v-if="show_give" method="PUT">
-              <div class="q-gutter-md">
-                <q-input v-model="device_id" label="id флешки" />
-              </div>
-              <div class="q-gutter-md">
-                <q-input v-model="fio" label="ФИО получателя" />
-              </div>
-              <div class="q-gutter-md">
-                <q-input type="number" v-model="tabnum" label="Табельный номер получателя" />
-              </div>
-              <div class="q-gutter-md">
-                <q-input v-model="department" label="Депортамет получателя" />
-              </div>
-              <div class="flex flex-center" style="margin: 20px">
-                <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true" class="btn-fixed-width" color="primary" label="Выдать" />
-              </div>
-            </form>
-            <form v-if="show_get" method="DELETE">
-              <div class="q-gutter-md">
-                <q-input v-model="device_id" label="id флешки" />
-              </div>
-              <div class="flex flex-center" style="margin: 20px">
-                <q-btn align="center" @click="get_flask(device_id), alert=true" class="btn-fixed-width" color="primary" label="Вернуть" />
-              </div>
-            </form>
-            <form action="" method="GET" v-if="show_search">
-              <div class="q-gutter-md">
-                <q-input v-model="device_id" label="id флешки" />  
-              </div>
-              <div class="flex space-between" style="justify-content: space-between; margin: 10px 0;">
-                <q-btn @click="search_date(device_id)" align="center" class="btn-fixed-width" color="primary" label="Поиск данных флешки" />
-                <q-btn @click="search_off()" align="center" class="btn-fixed-width" color="primary" label="Списанные флешки" />
-              </div>
-            </form>
               <div style="padding: 16px 0; max-width: 1133px" class="q-pa-md">
                 <q-table
                   :columns="columns"
@@ -98,24 +62,88 @@
                   style="height: 400px"
                   virtual-scroll
                   class="my-sticky-virtscroll-table"
-                />
+                >
+                  <template v-slot:header="props">
+                    <q-tr :props="props">
+                      <q-th auto-width />
+                      <q-th
+                        v-for="col in props.cols"
+                        :key="col.name"
+                        :props="props"
+                      >
+                        {{ col.label }}
+                      </q-th>
+                    </q-tr>
+                  </template>
+
+                  <template v-slot:body="props">
+                    <q-tr :props="props">
+                      <q-td auto-width>
+                        <q-btn size="sm" color="accent" round dense @click="props.expand = !props.expand" :icon="props.expand ? 'remove' : 'add'" />
+                      </q-td>
+                      <q-td
+                        v-for="col in props.cols"
+                        :key="col.name"
+                        :props="props"
+                      >
+                        {{ col.value }}
+                      </q-td>
+                    </q-tr>
+                    <q-tr v-show="props.expand" :props="props">
+                      <q-td colspan="100%">
+                        <div class="text-left">
+                          <div>
+                            <div>{{props.row.name}}</div>
+                            <q-btn align="center" style="margin-right: 10px;" @click="get_flask(props.row.device_id), alert=true" class="btn-fixed-width" color="primary" label="Вернуть" />
+                            <q-btn v-on:click="show_give = true" align="center" class="btn-fixed-width" color="primary" label="Выдать флешку" />
+                          </div>
+                        </div>
+                      </q-td>
+                    </q-tr>
+                  </template>
+              </q-table>
               </div>
         </section>
         <q-dialog v-model="alert">
-      <q-card>
-        <q-card-section>
-          <div class="text-h6">Сообщение</div>
-        </q-card-section>
+          <q-card>
+            <q-card-section>
+              <div class="text-h6">Сообщение</div>
+            </q-card-section>
 
-        <q-card-section class="q-pt-none">
-         {{result_work}}
-        </q-card-section>
+            <q-card-section class="q-pt-none">
+            {{result_work}}
+            </q-card-section>
 
-        <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+            <q-card-actions align="right">
+              <q-btn flat label="OK" color="primary" v-close-popup />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="show_give">
+          <q-card>
+            <q-card-section style="width: 500px">
+              <div class="text-h6">Выдать фле</div>
+            </q-card-section>
+
+            <q-card-section class="q-pt-none" style="width: 500px">
+            <form v-if="show_give" method="PUT">
+              <div class="q-gutter-md">
+                <q-input v-model="fio" label="ФИО получателя" />
+              </div>
+              <div class="q-gutter-md">
+                <q-input type="number" v-model="tabnum" label="Табельный номер получателя" />
+              </div>
+              <div class="q-gutter-md">
+                <q-input v-model="department" label="Депортамет получателя" />
+              </div>
+            </form>
+            </q-card-section>
+
+            <q-card-actions align="center" style="width: 500px">
+              <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true" class="btn-fixed-width" color="primary" label="Выдать" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
     </q-page-container>
   </q-layout>
 </template>
@@ -162,6 +190,7 @@ export default {
           label: 'Флешка',
           align: 'center',
           field: '0',
+          row: 'name',
           sortable: true,
           classes: 'bg-grey-2 ellipsis',
           style: 'max-width: 100px',
