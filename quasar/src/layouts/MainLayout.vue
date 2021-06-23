@@ -77,40 +77,6 @@
                       </q-th>
                     </q-tr>
                   </template>
-
-                  <template v-slot:body="props">
-                    <q-tr :props="props">
-                      <q-td auto-width>
-                        <q-btn size="sm" color="accent" round dense @click="props.expand = !props.expand" :icon="props.expand ? 'remove' : 'add'" />
-                      </q-td>
-                      <q-td
-                        v-for="col in props.cols"
-                        :key="col.name"
-                        :props="props"
-                      >
-                        {{ col.value }}
-                      </q-td>
-                    </q-tr>
-                    <q-tr v-show="props.expand" :props="props">
-                      <q-td colspan="100%">
-                        <div class="text-left">
-                          <div>
-                            <q-btn align="center"  @click="get_flask(props.row[0]), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
-                            <q-btn v-on:click="show_give = true, device_id=props.row[0]" align="center" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
-                            <q-btn v-on:click="show_off = true, off_flask(props.row[0]),alert=true, data_start()" align="center"  class="btn-fixed-width" color="primary" label="Списать флешку" />
-                            <q-btn
-                              color="primary"
-                              icon-right="archive"
-                              style="margin: 0 10px;"
-                              label="Скачать файлы"
-                              no-caps
-                              @click="exportTable(props.row[0],props.row[1],props.row[2])"
-                            />
-                          </div>
-                        </div>
-                      </q-td>
-                    </q-tr>
-                  </template>
               </q-table>
               </div>
         </section>
@@ -147,6 +113,33 @@
                 <q-input v-model="department" label="Депортамет получателя" />
               </div>
             </form>
+            </q-card-section>
+
+            <q-card-actions align="center" style="width: 500px">
+              <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Выдать" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="show_flask">
+        <q-card>
+          <q-card-section style="width: 500px">
+            <div class="text-h6">Выдать фле</div>
+            </q-card-section>
+
+          <q-card-section class="q-pt-none" style="width: 500px">
+          <div>
+            <q-btn align="center"  @click="get_flask(props.row[0]), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
+                            <q-btn v-on:click="show_give = true, device_id=props.row[0]" align="center" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
+                            <q-btn v-on:click="show_off = true, off_flask(props.row[0]),alert=true, data_start()" align="center"  class="btn-fixed-width" color="primary" label="Списать флешку" />
+                            <q-btn
+                              color="primary"
+                              icon-right="archive"
+                              style="margin: 0 10px;"
+                              label="Скачать файлы"
+                              no-caps
+                              @click="exportTable(props.row[0],props.row[1],props.row[2])"
+                            />
+                          </div>
             </q-card-section>
 
             <q-card-actions align="center" style="width: 500px">
