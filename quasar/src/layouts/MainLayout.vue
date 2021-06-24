@@ -90,8 +90,19 @@
             {{result_work}}
             </q-card-section>
 
-            <q-card-actions align="right">
+            <q-card-actions align="center">
               <q-btn flat label="OK" color="primary" v-close-popup />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="off_flask_ask">
+          <q-card>
+            <q-card-section>
+              <div class="text-h6">Вы уверены, что хотите списана {{device_id}}</div>
+            </q-card-section>
+            <q-card-actions align="center">
+              <q-btn flat @click="off_flask(device_id), alert=true, data_start()" label="Да" color="primary" v-close-popup />
+              <q-btn flat label="Нет" color="primary" v-close-popup />
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -116,21 +127,21 @@
             </q-card-section>
 
             <q-card-actions align="center" style="width: 500px">
-              <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Выдать" />
+              <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true, data_start()" v-close-popup class="btn-fixed-width" color="primary" label="Выдать" />
             </q-card-actions>
           </q-card>
         </q-dialog>
         <q-dialog v-model="show_flask" >
           <q-card style="max-width: 650px">
             <q-card-section align="center">
-              <div class="text-h6">Работа с базой флешки</div>
+              <div class="text-h6">Работа с базой флешки: {{device_id}}</div>
               </q-card-section>
 
             <q-card-section class="q-pt-none">
               <div>
                 <q-btn @click="get_flask(device_id), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
                 <q-btn v-on:click="show_give = true" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
-                <q-btn v-on:click="off_flask(device_id),alert=true, data_start()" class="btn-fixed-width" color="primary" label="Списать флешку" />
+                <q-btn v-on:click="off_flask_ask=true" class="btn-fixed-width" color="primary" label="Списать флешку" />
                 <q-btn
                   color="primary"
                   icon-right="archive"
@@ -184,6 +195,7 @@ export default {
       result: axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base)),
       result_work: 'Проверьте корректность введенных данных',
       show_all: true,
+      off_flask_ask: false,
       show_give: false,
       show_flask: false,
       show: false,
