@@ -47,7 +47,7 @@
                     <q-icon name="attach_file" />
                   </template>
                 </q-file>
-                <q-file filled v-model="file_reg" label="Файл txt" style="width:300px" counter>
+                <q-file filled v-model="file_reg" label="Файл reg" style="width:300px" counter>
                   <template v-slot:prepend>
                     <q-icon name="attach_file" />
                   </template>
@@ -63,21 +63,9 @@
                   :rows-per-page-options="[0]"
                   style="height: 400px"
                   virtual-scroll
+                  selection="single"
                   class="my-sticky-virtscroll-table"
-                >
-                 <template v-slot:body="props">
-                    <q-tr :props="props">
-                      <q-td key="device_id" :props="props" style="max-width: 1000px;">
-                        <q-btn @click="show_flask=true, device_id=props.row[0], device_path=props.row[1], device_reg=props.row[2]" :label=props.row[0] />
-                      </q-td>
-                      <q-td key="date_in_base" :props="props">{{ props.row[3] }}</q-td>
-                      <q-td key="date_out_base" :props="props">{{ props.row[4] }}</q-td>
-                      <q-td key="fio_base" :props="props">{{ props.row[5] }}</q-td>
-                      <q-td key="tabnum_base" :props="props">{{ props.row[6] }}</q-td>
-                      <q-td key="department_base" :props="props">{{ props.row[7] }}</q-td>
-                    </q-tr>
-                  </template>
-                </q-table>
+                />
               </div>
         </section>
         <q-dialog v-model="alert">
@@ -195,7 +183,7 @@ export default {
       fio: '',
       tabnum: '',
       department: '',
-      result: '',
+      result: [],
       result_work: 'Проверьте корректность введенных данных',
       show_all: true,
       off_flask_ask: false,
@@ -230,7 +218,7 @@ export default {
       try{
         axios.post('http://localhost:800/upload_file', formData, {headers: {
           'Content-Type': 'multipart/form-data'
-        }}).then(response=>(console.log(response)))
+        }}).then(response=>(console.log(response.status)))
       }catch(err){
         this.result_work=err
       }
