@@ -183,6 +183,9 @@
 import axios from 'axios'
 import { exportFile} from 'quasar'
 export default { 
+  beforeCreate() {
+    axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base))
+  },
   data(){
     return{
       alert: false,
@@ -192,7 +195,7 @@ export default {
       fio: '',
       tabnum: '',
       department: '',
-      result: axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base)),
+      result: '',
       result_work: 'Проверьте корректность введенных данных',
       show_all: true,
       off_flask_ask: false,
@@ -218,6 +221,7 @@ export default {
     
     }
   },
+  
   methods: {
     add_flask(file_txt, file_reg){
       let formData = new FormData();
@@ -226,7 +230,7 @@ export default {
       try{
         axios.post('http://localhost:800/upload_file', formData, {headers: {
           'Content-Type': 'multipart/form-data'
-        }}).then(this.result_work = 'Флешка добавлена')
+        }}).then(response=>(console.log(response)))
       }catch(err){
         this.result_work=err
       }
@@ -237,7 +241,7 @@ export default {
     get_flask(device_id){
       try{
         axios.delete("http://localhost:800/get_flask?device_id="+device_id,
-        ).then(this.result_work = 'Флешка возвращена')
+        ).then(response=>(this.result_work = response))
       }catch(err){
         this.result_work=err
       }
@@ -279,5 +283,5 @@ export default {
       exportFile(device_id+'.reg', device_reg)
     }
   }
-} 
+}
 </script>
