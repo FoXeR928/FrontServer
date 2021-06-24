@@ -10,8 +10,9 @@
     <q-page-container class="flex flex-center" style="margin: 50px 0">
       <section class="section-add_flask -section" id='all'>
             <nav class="flex flex-center">
-                <q-btn v-on:click="show = false, show_all = true, data_start()" align="center" class="btn-fixed-width" color="primary" label="Найти флешку" />
-                <q-btn v-on:click="show = true, show_all = false, data_start()" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
+                <q-btn v-on:click="show = false, show_all = true, show_flask=false, data_start()" align="center" class="btn-fixed-width" color="primary" label="Найти флешку" />
+                <q-btn v-on:click="show = true, show_all = false, show_flask=false, data_start()" align="center" class="btn-fixed-width" color="primary" label="Добавить флешку" />
+                 <q-btn v-on:click="show = false, show_all = false, show_flask=true, data_start()" align="center" class="btn-fixed-width" color="primary" label="Работа с флешкой" />
             </nav>
             <form v-if="show_all" action="" method="GET" class="flex flex-center">
               <q-input bottom-slots v-model="fio" label="Поиск по имени">
@@ -55,6 +56,21 @@
               </div>
               <q-btn align="center" @click="add_flask(file_txt, file_reg), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Добавить" />
             </form>
+            <form v-if="show_flask" action="" method="PUL" class="flex flex-center">
+                <div style="margin: 20px 0">
+                    <q-btn @click="get_flask(selected[0]), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
+                    <q-btn v-on:click="show_give = true" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
+                    <q-btn v-on:click="off_flask_ask=true" class="btn-fixed-width" color="primary" label="Списать флешку" />
+                    <q-btn
+                      color="primary"
+                      icon-right="archive"
+                      style="margin: 0 10px;"
+                      label="Скачать файлы"
+                      no-caps
+                      @click="exportTable(selected[0],selected[1],selected[2])"
+                    />
+                </div>
+            </form>
               <div style="padding: 16px 0; max-width: 1133px" class="q-pa-md">
                 <q-table
                   :columns="columns"
@@ -64,9 +80,11 @@
                   style="height: 400px"
                   virtual-scroll
                   selection="single"
+                  :selected.sync="selected"
                   class="my-sticky-virtscroll-table"
                 />
               </div>
+              <div>{{selected}}</div>
         </section>
         <q-dialog v-model="alert">
           <q-card>
@@ -86,10 +104,10 @@
         <q-dialog v-model="off_flask_ask">
           <q-card>
             <q-card-section>
-              <div class="text-h6">Вы уверены, что хотите списана {{device_id}}</div>
+              <div class="text-h6">Вы уверены, что хотите списана {{selected[0]}}</div>
             </q-card-section>
             <q-card-actions align="center">
-              <q-btn flat @click="off_flask(device_id), alert=true, data_start()" label="Да" color="primary" v-close-popup />
+              <q-btn flat @click="off_flask(selected[0]), alert=true, data_start()" label="Да" color="primary" v-close-popup />
               <q-btn flat label="Нет" color="primary" v-close-popup />
             </q-card-actions>
           </q-card>
@@ -115,36 +133,9 @@
             </q-card-section>
 
             <q-card-actions align="center" style="width: 500px">
-              <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true, data_start()" v-close-popup class="btn-fixed-width" color="primary" label="Выдать" />
+              <q-btn align="center" @click="give_flask(selected[0], selected[5], selected[6], selected[7]), alert=true, data_start()" v-close-popup class="btn-fixed-width" color="primary" label="Выдать" />
             </q-card-actions>
           </q-card>
-        </q-dialog>
-        <q-dialog v-model="show_flask" >
-          <q-card style="max-width: 650px">
-            <q-card-section align="center">
-              <div class="text-h6">Работа с базой флешки: {{device_id}}</div>
-              </q-card-section>
-
-            <q-card-section class="q-pt-none">
-              <div>
-                <q-btn @click="get_flask(device_id), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
-                <q-btn v-on:click="show_give = true" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
-                <q-btn v-on:click="off_flask_ask=true" class="btn-fixed-width" color="primary" label="Списать флешку" />
-                <q-btn
-                  color="primary"
-                  icon-right="archive"
-                  style="margin: 0 10px;"
-                  label="Скачать файлы"
-                  no-caps
-                  @click="exportTable(device_id,device_path,device_reg)"
-                />
-                </div>
-              </q-card-section>
-                
-              <q-card-actions align="center">
-                <q-btn flat label="OK" color="primary" v-close-popup />
-              </q-card-actions>
-            </q-card>
         </q-dialog>
     </q-page-container>
   </q-layout>
@@ -176,6 +167,7 @@ export default {
   },
   data(){
     return{
+      selected: [],
       alert: false,
       file_txt: '',
       file_reg: '',
