@@ -65,19 +65,19 @@
                   virtual-scroll
                   class="my-sticky-virtscroll-table"
                 >
-                  <template v-slot:header="props">
+                 <template v-slot:body="props">
                     <q-tr :props="props">
-                      <q-th auto-width />
-                      <q-th
-                        v-for="col in props.cols"
-                        :key="col.name"
-                        :props="props"
-                      >
-                        {{ col.label }}
-                      </q-th>
+                      <q-td key="device_id" :props="props" style="max-width: 1000px;">
+                        <q-btn @click="show_flask=true, device_id=props.row[0], device_path=props.row[1], device_reg=props.row[2]" :label=props.row[0] />
+                      </q-td>
+                      <q-td key="date_in_base" :props="props">{{ props.row[3] }}</q-td>
+                      <q-td key="date_out_base" :props="props">{{ props.row[4] }}</q-td>
+                      <q-td key="fio_base" :props="props">{{ props.row[5] }}</q-td>
+                      <q-td key="tabnum_base" :props="props">{{ props.row[6] }}</q-td>
+                      <q-td key="department_base" :props="props">{{ props.row[7] }}</q-td>
                     </q-tr>
                   </template>
-              </q-table>
+                </q-table>
               </div>
         </section>
         <q-dialog v-model="alert">
@@ -98,11 +98,11 @@
         <q-dialog v-model="show_give">
           <q-card>
             <q-card-section style="width: 500px">
-              <div class="text-h6">Выдать фле</div>
+              <div class="text-h6">Выдать флешку</div>
             </q-card-section>
 
             <q-card-section class="q-pt-none" style="width: 500px">
-            <form v-if="show_give" method="PUT">
+            <form method="PUT">
               <div class="q-gutter-md">
                 <q-input v-model="fio" label="ФИО получателя" />
               </div>
@@ -120,32 +120,32 @@
             </q-card-actions>
           </q-card>
         </q-dialog>
-        <q-dialog v-model="show_flask">
-        <q-card>
-          <q-card-section style="width: 500px">
-            <div class="text-h6">Выдать фле</div>
-            </q-card-section>
+        <q-dialog v-model="show_flask" >
+          <q-card style="max-width: 650px">
+            <q-card-section align="center">
+              <div class="text-h6">Работа с базой флешки</div>
+              </q-card-section>
 
-          <q-card-section class="q-pt-none" style="width: 500px">
-          <div>
-            <q-btn align="center"  @click="get_flask(props.row[0]), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
-                            <q-btn v-on:click="show_give = true, device_id=props.row[0]" align="center" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
-                            <q-btn v-on:click="show_off = true, off_flask(props.row[0]),alert=true, data_start()" align="center"  class="btn-fixed-width" color="primary" label="Списать флешку" />
-                            <q-btn
-                              color="primary"
-                              icon-right="archive"
-                              style="margin: 0 10px;"
-                              label="Скачать файлы"
-                              no-caps
-                              @click="exportTable(props.row[0],props.row[1],props.row[2])"
-                            />
-                          </div>
-            </q-card-section>
-
-            <q-card-actions align="center" style="width: 500px">
-              <q-btn align="center" @click="give_flask(device_id, fio, tabnum, department), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Выдать" />
-            </q-card-actions>
-          </q-card>
+            <q-card-section class="q-pt-none">
+              <div>
+                <q-btn @click="get_flask(device_id), alert=true, data_start()" class="btn-fixed-width" color="primary" label="Вернуть" />
+                <q-btn v-on:click="show_give = true" style="margin: 0 10px;" class="btn-fixed-width" color="primary" label="Выдать флешку" />
+                <q-btn v-on:click="off_flask(device_id),alert=true, data_start()" class="btn-fixed-width" color="primary" label="Списать флешку" />
+                <q-btn
+                  color="primary"
+                  icon-right="archive"
+                  style="margin: 0 10px;"
+                  label="Скачать файлы"
+                  no-caps
+                  @click="exportTable(device_id,device_path,device_reg)"
+                />
+                </div>
+              </q-card-section>
+                
+              <q-card-actions align="center">
+                <q-btn flat label="OK" color="primary" v-close-popup />
+              </q-card-actions>
+            </q-card>
         </q-dialog>
     </q-page-container>
   </q-layout>
@@ -184,10 +184,9 @@ export default {
       result: axios.get("http://localhost:800/all_flask").then(response => (this.result = response.data.Base)),
       result_work: 'Проверьте корректность введенных данных',
       show_all: true,
-      show_search: false,
-      show: false,
       show_give: false,
-      show_get: false,
+      show_flask: false,
+      show: false,
       columns: [
         {
           name: 'device_id',
@@ -199,11 +198,11 @@ export default {
           style: 'max-width: 100px',
           headerClasses: 'bg-primary text-white'
         },
-        { name: 'date_in_base', align: 'center', label: 'Дата введения', field: '3', sortable: true },
-        { name: 'date_out_base', align: 'center', label: 'Дата выдачи', field: '4', sortable: true },
+        { name: 'date_in_base', align: 'center', label: 'Дата введения', field: '3',sortable: true },
+        { name: 'date_out_base', align: 'center', label: 'Дата выдачи',field: '4', sortable: true },
         { name: 'fio_base', align: 'center', label: 'Сотрудник', field: '5', sortable: true },
         { name: 'tabnum_base', align: 'center', label: 'Табельный номер', field: '6', sortable: true},
-        { name: 'department_base', align: 'center', label: 'Департамент', field: '7', sortable: true}],
+        { name: 'department_base', align: 'center', label: 'Департамент',field: '7',sortable: true}],
     
     }
   },
@@ -240,7 +239,7 @@ export default {
       }
     },
     off_flask(device_id){
-      axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio=&tabnum="+null+"&department=",{
+      axios.put("http://localhost:800/give_flask?device_id="+device_id+"&fio=&tabnum=&department=",{
       }).then(this.result_work = 'Флешка списана')
     },
     search_device_fio(fio){
